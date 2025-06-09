@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo para la tabla 'users'
+model User {
+  id        BigInt   @id @default(autoincrement()) @map("id")
+  name      String   @map("name")
+  email     String   @unique @map("email")
+  avatar    String?  @map("avatar") // El '?' indica que el campo es opcional (nullable)
+  discordId String?  @unique @map("discordId")
+  role      String   @default("user") @map("role") // Valor por defecto
+  joinedAt  DateTime @default(now()) @map("joinedAt") @db.Timestamptz // Tipo de fecha con zona horaria
+
+  // Relaciones: un usuario puede tener muchas propuestas, votos y archivos
+  proposals Proposal[] // Una lista de propuestas asociadas a este usuario
+  votes     Vote[] // Una lista de votos asociados a este usuario
+  files     File[] // Una lista de archivos asociados a este usuario
+
+  @@map("users") // Mapea este modelo de Prisma a la tabla 'users' en la DB
+}
+
+// Modelo para la tabla 'proposals'
+model Proposal {
+  id            BigInt    @id @default(autoincrement()) @map("id")
+  titleProposal String    @map("titleProposal")
+  category      String    @map("category")
+  votesCount    Int       @default(0) @map("votesCount")
+  bodyText      String    @map("bodyText") @db.Text // Tipo TEXT en la DB
+  userId        BigInt    @map("user_id") // Nombre camelCase para la relación
+  status        String    @default("draft") @map("status")
+  createdAt     DateTime  @default(now()) @map("createdAt") @db.Timestamptz
+  dueDate       DateTime? @map("dueDate") @db.Timestamptz // Opcional
+  commentCount  Int       @default(0) @map("commentCount")
+
+  // Relación: una propuesta pertenece a un usuario
+  user  User   @relation(fields: [userId], references: [id])
+  // Relaciones inversas: una propuesta puede tener muchos votos y muchos archivos
+  votes Vote[]
+  files File[]
+
+  @@map("proposals") // Mapea este modelo de Prisma a la tabla 'proposals'
+}
+
+// Modelo para la tabla 'votes'
+model Vote {
+  id         BigInt   @id @default(autoincrement()) @map("id")
+  proposalId BigInt   @map("proposal_id")
+  userId     BigInt   @map("user_id")
+  voteType   String   @map("vote_type")
+  votedAt    DateTime @default(now()) @map("votedAt") @db.Timestamptz
+
+  // Relaciones
+  proposal Proposal @relation(fields: [proposalId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  // Restricción única para asegurar que un usuario vote una vez por propuesta
+  @@unique([userId, proposalId])
+  @@map("votes") // Mapea este modelo de Prisma a la tabla 'votes'
+}
+
+// Modelo para la tabla 'files'
+model File {
+  id         BigInt  @id @default(autoincrement()) @map("id")
+  name       String  @map("name")
+  type       String  @map("type")
+  size       BigInt  @map("size") // BigInt para el tamaño
+  url        String  @unique @map("url") @db.Text // URL única y TEXT en DB
+  userId     BigInt  @map("user_id")
+  proposalId BigInt? @map("proposal_id") // Opcional
+
+  category   String?  @map("category") // Opcional
+  uploadedAt DateTime @default(now()) @map("uploadedAt") @db.Timestamptz
+
+  // Relaciones
+  user     User      @relation(fields: [userId], references: [id])
+  proposal Proposal? @relation(fields: [proposalId], references: [id]) // Relación opcional
+
+  @@map("files") // Mapea este modelo de Prisma a la tabla 'files'
+}
