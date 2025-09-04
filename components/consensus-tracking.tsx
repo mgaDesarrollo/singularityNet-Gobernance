@@ -68,13 +68,13 @@ export default function ConsensusTracking({
   const handleVote = async () => {
     if (!voteType) return
 
-    // Validaciones según el tipo de voto
+    // Validations by vote type
     if (voteType === 'NEGATIVE' && !voteComment.trim()) {
-      alert('El voto negativo requiere un comentario explicando el motivo.')
+      alert('An object vote requires a comment explaining your reasoning.')
       return
     }
     if (voteType === 'ABSTAIN' && !voteComment.trim()) {
-      alert('La abstención requiere un comentario explicando el motivo.')
+      alert('An abstain vote requires a comment explaining your reasoning.')
       return
     }
 
@@ -172,11 +172,11 @@ export default function ConsensusTracking({
   const getVoteText = (type: VoteTypeEnum) => {
     switch (type) {
       case 'POSITIVE':
-        return 'A Favor'
+  return 'Consent'
       case 'NEGATIVE':
-        return 'En Contra'
+  return 'Object'
       case 'ABSTAIN':
-        return 'Abstención'
+  return 'Abstain'
     }
   }
 
@@ -195,9 +195,9 @@ export default function ConsensusTracking({
           <h3 className="text-xl font-bold text-white">Consensus Tracking</h3>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 bg-transparent border-b border-slate-700 mb-4">
+            <TabsList className="grid w-full grid-cols-2 bg-transparent border-b border-slate-700 mb-4">
             <TabsTrigger value="voting" className="data-[state=active]:border-b-2 data-[state=active]:border-purple-500 rounded-none">
-              Voting
+              Interactions
             </TabsTrigger>
             <TabsTrigger value="comments" className="data-[state=active]:border-b-2 data-[state=active]:border-purple-500 rounded-none">
               Comments & Replies
@@ -208,7 +208,7 @@ export default function ConsensusTracking({
             {canVote ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-3 mb-4">
-                  <Button
+                    <Button
                     variant={voteType === "POSITIVE" ? "default" : "outline"}
                     className={`${
                       voteType === "POSITIVE"
@@ -217,12 +217,12 @@ export default function ConsensusTracking({
                     } transition-all duration-200 font-medium`}
                     onClick={() => setVoteType("POSITIVE")}
                     disabled={isSubmittingVote}
-                  >
+                    >
                     {voteType === "POSITIVE" && <CheckIcon className="mr-1 h-4 w-4" />}
                     <ThumbsUpIcon className="h-4 w-4" />
-                    <span className="ml-1">For</span>
+                    <span className="ml-1">Consent</span>
                   </Button>
-                  <Button
+                    <Button
                     variant={voteType === "NEGATIVE" ? "default" : "outline"}
                     className={`${
                       voteType === "NEGATIVE"
@@ -231,10 +231,10 @@ export default function ConsensusTracking({
                     } transition-all duration-200 font-medium`}
                     onClick={() => setVoteType("NEGATIVE")}
                     disabled={isSubmittingVote}
-                  >
+                    >
                     {voteType === "NEGATIVE" && <CheckIcon className="mr-1 h-4 w-4" />}
                     <ThumbsDownIcon className="h-4 w-4" />
-                    <span className="ml-1">Against</span>
+                    <span className="ml-1">Object</span>
                   </Button>
                   <Button
                     variant={voteType === "ABSTAIN" ? "default" : "outline"}
@@ -261,27 +261,33 @@ export default function ConsensusTracking({
                       </Badge>
                       {(voteType === 'NEGATIVE' || voteType === 'ABSTAIN') && (
                         <Badge variant="outline" className="bg-orange-500/30 text-orange-200 border-orange-400/50 font-medium">
-                          Comentario Requerido
+                          Comment Required
                         </Badge>
                       )}
                     </div>
 
                     {(voteType === 'NEGATIVE' || voteType === 'ABSTAIN') && (
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">
-                          {voteType === 'NEGATIVE' 
-                            ? 'Explica por qué estás en contra:' 
-                            : 'Explica por qué te abstienes:'}
-                        </label>
-                        <Textarea
-                          value={voteComment}
-                          onChange={(e) => setVoteComment(e.target.value)}
-                          placeholder={voteType === 'NEGATIVE' 
-                            ? 'Explica tu razón para votar en contra...' 
-                            : 'Explica tu razón para abstenerte...'}
-                          className="min-h-[100px] bg-slate-700 border-slate-600 text-slate-50 focus:border-purple-500"
-                          required
-                        />
+                        {voteType === 'NEGATIVE' && (
+                          <div className="mb-3 text-sm text-slate-300 whitespace-pre-line">
+                            Explain why you are against it:
+                            {"\n"}
+                            What, specifically, would need to change in order to obtain your consent?:
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-300 mb-2">
+                            {voteType === 'NEGATIVE' ? 'Your objection' : 'Reason for abstaining'}
+                          </label>
+                          <Textarea
+                            value={voteComment}
+                            onChange={(e) => setVoteComment(e.target.value)}
+                            placeholder={voteType === 'NEGATIVE' ? 'Write your objection...' : 'Explain why you abstain...'}
+                            className="min-h-[100px] bg-slate-700 border-slate-600 text-slate-50 focus:border-purple-500"
+                            required
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -305,7 +311,7 @@ export default function ConsensusTracking({
                         ) : (
                           <>
                             <CheckIcon className="mr-2 h-4 w-4" />
-                            Submit {voteType === 'POSITIVE' ? 'Positive' : voteType === 'NEGATIVE' ? 'Negative' : 'Abstain'} Vote
+                            Submit {voteType === 'POSITIVE' ? 'Consent' : voteType === 'NEGATIVE' ? 'Object' : 'Abstain'} Vote
                           </>
                         )}
                       </Button>
@@ -330,11 +336,11 @@ export default function ConsensusTracking({
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div className="p-3 border-l-4 border-green-500 rounded-md">
                       <div className="text-3xl font-bold text-green-300 mb-1">{proposal.positiveVotes}</div>
-                      <div className="text-sm text-green-200 font-medium">For</div>
+                      <div className="text-sm text-green-200 font-medium">Consent</div>
                     </div>
                     <div className="p-3 border-l-4 border-red-500 rounded-md">
                       <div className="text-3xl font-bold text-red-300 mb-1">{proposal.negativeVotes}</div>
-                      <div className="text-sm text-red-200 font-medium">Against</div>
+                      <div className="text-sm text-red-200 font-medium">Object</div>
                     </div>
                     <div className="p-3 border-l-4 border-yellow-500 rounded-md">
                       <div className="text-3xl font-bold text-yellow-300 mb-1">{proposal.abstainVotes}</div>
